@@ -1,5 +1,7 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
 
 const refs = {
   startButton: document.querySelector('button[data-start]'),
@@ -8,9 +10,12 @@ const refs = {
   dataMinutes: document.querySelector('span[data-minutes]'),
   dataSeconds: document.querySelector('span[data-seconds]'),
   form: document.querySelector('.timer'),
+  datetimePicker: document.querySelector('#datetime-picker'),
 };
+
 let selectedDatesCounter;
 let operationsFlag = false;
+let timerId;
 let unformattingDate;
 
 const options = {
@@ -25,7 +30,10 @@ const options = {
       console.log(selectedDates[0] - dateNow);
       selectedDatesCounter = selectedDates[0];
       if (selectedDates[0] - dateNow < 0) {
-        window.alert('Please choose a date in the future');
+        iziToast.error({
+          title: 'Error',
+          message: 'Please choose a date in the future',
+        });
         refs.startButton.setAttribute('disabled', true);
       } else {
         refs.startButton.removeAttribute('disabled');
@@ -33,10 +41,10 @@ const options = {
     }
   },
 };
-const flatpickrObject = flatpickr('#datetime-picker', options);
+const flatpickrObject = flatpickr(refs.datetimePicker, options);
 
 const timerStarter = () => {
-  const timerId = setInterval(() => {
+  timerId = setInterval(() => {
     if (selectedDatesCounter - Date.now() > 0) {
       unformattingDate = selectedDatesCounter - Date.now();
       refs.dataDays.textContent = addLeadingZero(
@@ -51,6 +59,10 @@ const timerStarter = () => {
       refs.dataSeconds.textContent = addLeadingZero(
         convertMs(unformattingDate).seconds
       );
+    } else {
+      clearInterval(timerId);
+      refs.startButton.removeAttribute('disabled');
+      refs.datetimePicker.disabled = false;
     }
   }, 1000);
 };
@@ -60,9 +72,12 @@ const startButtonHandler = event => {
     operationsFlag = true;
     timerStarter();
     refs.startButton.setAttribute('disabled', true);
+    refs.datetimePicker.disabled = true;
   } else {
-    clearTimeout(timerId);
-    timerStarter();
+    clearInterval(timerId);
+    operationsFlag = false;
+    refs.startButton.removeAttribute('disabled');
+    refs.datetimePicker.disabled = false;
   }
 };
 

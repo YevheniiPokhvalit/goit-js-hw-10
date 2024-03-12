@@ -27,7 +27,6 @@ const options = {
   onClose(selectedDates) {
     if (!operationsFlag) {
       const dateNow = new Date();
-      console.log(selectedDates[0] - dateNow);
       selectedDatesCounter = selectedDates[0];
       if (selectedDates[0] - dateNow < 0) {
         iziToast.error({
